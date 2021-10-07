@@ -13,14 +13,14 @@ from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 __all__ = ['PeleeNet', 'peleenet1x', 'peleenet2x', 'peleenet1x_se', 'peleenet2x_se']
 
-model_urls = {
-    'peleenet1x': 'https://github.com/edge-cv/benchmark/releases/download/pretrained/peleenet1x.pth',
-    'peleenet2x': 'https://github.com/edge-cv/benchmark/releases/download/pretrained/peleenet2x.pth'
-}
 # model_urls = {
-#     'peleenet1x': 'pretrained/peleenet1x.pth',
-#     'peleenet2x': 'pretrained/peleenet2x.pth'
+#     'peleenet1x': 'https://github.com/edge-cv/benchmark/releases/download/pretrained/peleenet1x.pth',
+#     'peleenet2x': 'https://github.com/edge-cv/benchmark/releases/download/pretrained/peleenet2x.pth'
 # }
+# # model_urls = {
+# #     'peleenet1x': 'pretrained/peleenet1x.pth',
+# #     'peleenet2x': 'pretrained/peleenet2x.pth'
+# # }
 
 
 def _cfg(url='', **kwargs):
@@ -41,20 +41,6 @@ default_cfgs = {
     'peleenet2x_se': _cfg(url='https://github.com/edge-cv/benchmark/releases/download/pretrained/peleenet2x.pth')
 }
 
-
-# cfgs: Dict[str, List[Union[str, int]]] = {
-#     'vgg11': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
-#     'vgg13': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
-#     'vgg16': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
-#     'vgg19': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
-# }
-
-
-def peleenet1xa(pretrained: bool = False, progress: bool = True, **kwargs: Any):
-    return _peleenet('peleenet1x', pretrained, progress,
-        block_config=[3, 4, 6, 4], 
-        bottleneck_width=[1,2,4,4], 
-        **kwargs)
 
 @register_model
 def peleenet1x(pretrained: bool = False, progress: bool = True, **kwargs: Any):
@@ -91,18 +77,19 @@ def peleenet2x_se(pretrained: bool = False, progress: bool = True, **kwargs: Any
         **kwargs)
 
 class _DenseLayer(nn.Module):
-    def __init__(self, num_input_features, growth_rate, bottleneck_width, use_se):
+    def __init__(self, in_channels, growth_rate, bottleneck_width, use_se):
         super(_DenseLayer, self).__init__()
 
 
         growth_rate = growth_rate // 2
-        inter_channel = growth_rate  * bottleneck_width  
+        self.out_channels = in_channels + 3 * growth_rate 
+        inter_channels = growth_rate  * bottleneck_width  
 
-        self.branch1a = BasicConv2d(num_input_features, inter_channel, kernel_size=1)
-        self.branch1b = BasicConv2d(inter_channel, growth_rate, kernel_size=3, padding=1)
+        self.branch1a = BasicConv2d(in_channels, inter_channels, kernel_size=1)
+        self.branch1b = BasicConv2d(inter_channels, growth_rate, kernel_size=3, padding=1)
 
-        self.branch2a = BasicConv2d(num_input_features, inter_channel, kernel_size=1)
-        self.branch2b = BasicConv2d(inter_channel, growth_rate, kernel_size=3, padding=1)
+        self.branch2a = BasicConv2d(in_channels, inter_channels, kernel_size=1)
+        self.branch2b = BasicConv2d(inter_channels, growth_rate, kernel_size=3, padding=1)
         self.branch2c = BasicConv2d(growth_rate, growth_rate, kernel_size=3, padding=1)
         if use_se:
             self.se = SELayer(growth_rate*3, growth_rate)
@@ -127,11 +114,13 @@ class _DenseLayer(nn.Module):
 
 
 class _DenseBlock(nn.Sequential):
-    def __init__(self, num_layers, num_input_features, bn_size, growth_rate, use_se):
+    def __init__(self, num_layers, in_channels, bn_size, growth_rate, use_se):
         super(_DenseBlock, self).__init__()
+        self.out_channels = in_channels
         for i in range(num_layers):
-            layer = _DenseLayer(int(num_input_features + i * 1.5*growth_rate), growth_rate, bn_size, use_se)
+            layer = _DenseLayer(self.out_channels, growth_rate, bn_size, use_se)
             self.add_module('denselayer%d' % (i + 1), layer)
+            self.out_channels = layer.out_channels
 
 class _StemBlock(nn.Module):
     def __init__(self, num_input_channels, num_init_features, kernel_size=5, stride=3):
@@ -207,7 +196,7 @@ class PeleeNet(nn.Module):
                 stem_block=(32, 3, 2), 
                 bottleneck_width=[1, 2, 4, 4], 
                 drop_rate=0.05, 
-                num_input_channels=3,
+                in_channels=3,
                 num_classes=1000, 
                 out_channels=(128,256,512,896),
                 use_se=False):
@@ -216,12 +205,10 @@ class PeleeNet(nn.Module):
 
         self.num_classes = num_classes
 
-
         num_init_features, first_kernel_size, first_stride = stem_block
-
         self.features = nn.Sequential(OrderedDict([
                 ('stemblock', _StemBlock(
-                    num_input_channels, num_init_features,
+                    in_channels, num_init_features,
                     first_kernel_size, first_stride)), 
             ]))     
 
@@ -237,15 +224,14 @@ class PeleeNet(nn.Module):
         # Each denseblock
         num_features = num_init_features
         for i, num_layers in enumerate(block_config):
-            block = _DenseBlock(num_layers=num_layers, num_input_features=num_features,
+            block = _DenseBlock(num_layers=num_layers, in_channels=num_features,
                                 bn_size=bottleneck_width[i], growth_rate=growth_rate[i], use_se=use_se)
             self.features.add_module('denseblock%d' % (i + 1), block)
-            in_channels = int(num_features + num_layers * 1.5 * growth_rate[i])
             num_features = out_channels[i]
 
-            self.features.add_module('transition%d' % (i + 1), BasicConv2d(in_channels, num_features, kernel_size=1))
+            self.features.add_module('transition%d' % (i + 1), BasicConv2d(block.out_channels, num_features, kernel_size=1))
             if i != len(block_config) - 1:
-                self.features.add_module('transition%d/pool' % (i + 1), nn.AvgPool2d(kernel_size=2, stride=2))
+                self.features.add_module('pool%d' % (i + 1), nn.AvgPool2d(kernel_size=2, stride=2))
 
         self.drop_rate = drop_rate
     
@@ -303,7 +289,7 @@ def _peleenet(arch: str, pretrained: bool = False, progress: bool = True, **kwar
 
 if __name__ == '__main__':
     input_var = torch.autograd.Variable(torch.Tensor(1,3,224,224))
-    model = peleenet2x(num_classes=120)
+    model = peleenet1x(num_classes=120)
 
     print(model)
 
