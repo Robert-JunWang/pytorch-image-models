@@ -2,6 +2,7 @@
 from functools import partial
 from collections import OrderedDict
 from typing import Any, Callable, Dict, List, Optional, Sequence
+import math
 
 import torch
 from torch import nn, Tensor
@@ -255,7 +256,7 @@ class PeleeNas(nn.Module):
     
         # Linear layer
         if num_classes is not None:
-            self.classifier = nn.Linear(num_features, num_classes)
+            self.classifier = nn.Linear(in_channels, num_classes)
         else:
             self.classifier = None
 
