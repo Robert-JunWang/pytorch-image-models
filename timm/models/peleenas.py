@@ -113,9 +113,9 @@ class BasicConv2d(nn.Sequential):
         self.conv = nn.Conv2d(in_channels, out_channels, bias=False, **kwargs)
         self.norm = nn.BatchNorm2d(out_channels) 
         if activation == 'hs':
-            self.activation = nn.Hardswish
+            self.activation = nn.Hardswish()
         else:
-            self.activation = nn.ReLU
+            self.activation = nn.ReLU()
 
 
 class _DenseLayer(nn.Module):
@@ -244,24 +244,56 @@ class PeleeNas(nn.Module):
                 self.features.add_module('pool%d' % (i + 1), nn.AvgPool2d(kernel_size=2, stride=2))
   
         # Linear layer
-        self.avgpool = nn.AdaptiveAvgPool2d(1)
-        self.classifier = nn.Sequential(
-            nn.Linear(in_channels, last_channel),
-            nn.Hardswish(inplace=True),
-            nn.Dropout(p=drop_rate, inplace=True),
-            nn.Linear(last_channel, num_classes),
-        )
+        # self.avgpool = nn.AdaptiveAvgPool2d(1)
+        # self.classifier = nn.Sequential(
+        #     nn.Linear(in_channels, last_channel),
+        #     nn.Hardswish(inplace=True),
+        #     nn.Dropout(p=drop_rate, inplace=True),
+        #     nn.Linear(last_channel, num_classes),
+        # )
+        self.drop_rate = drop_rate
+    
+        # Linear layer
+        if num_classes is not None:
+            self.classifier = nn.Linear(num_features, num_classes)
+        else:
+            self.classifier = None
 
+        self._initialize_weights()
 
-    def forward(self, x):
-        x = self.features(x)
+    # def forward(self, x):
+    #     x = self.features(x)
 
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-        x = self.classifier(x)
+    #     x = self.avgpool(x)
+    #     x = torch.flatten(x, 1)
+    #     x = self.classifier(x)
         
-        return x
+    #     return x
+    def forward(self, x):
+        features = self.features(x)
 
+        out = features.mean([2, 3])
+        if self.drop_rate > 0:
+            out = F.dropout(out, p=self.drop_rate, training=self.training)
+
+        if self.classifier is not None:
+            out = self.classifier(out)
+        return out
+
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+                if m.bias is not None:
+                    m.bias.data.zero_()
+            elif isinstance(m, nn.BatchNorm2d):
+                m.weight.data.fill_(1)
+                m.bias.data.zero_()
+            elif isinstance(m, nn.Linear):
+                n = m.weight.size(1)
+                m.weight.data.normal_(0, 0.01)
+                m.bias.data.zero_()
 
 def _peleenas(arch: str, pretrained: bool = False, progress: bool = True, **kwargs: Any):
     model = PeleeNas(**kwargs)
@@ -292,3 +324,4 @@ if __name__ == '__main__':
         layer.register_forward_hook(print_size)
 
     o = model.forward(input_var)
+
