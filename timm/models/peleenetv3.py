@@ -34,11 +34,8 @@ default_cfgs = {
     'peleenet2x': _cfg(url='https://github.com/edge-cv/benchmark/releases/download/pretrained/peleenet2x.pth')
 }
 
-# DropBlock = namedtuple('DropBlock', 'drop_prob block_size gamma_scale')
-
 @register_model
 def peleenet1x(pretrained: bool = False, progress: bool = True, **kwargs: Any):
-    model_args = dict(**kwargs)
 
     block_setting = [
         BlockConfig(3, 32, 2, 128, activation='relu', use_se=False),
@@ -52,9 +49,37 @@ def peleenet1x(pretrained: bool = False, progress: bool = True, **kwargs: Any):
                      last_channel=1024,
                      **kwargs)
 
+
+@register_model
+def peleenet1xb(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(3, 32, 2, 128, activation='relu', use_se=False),
+        BlockConfig(4, 32, 4, 256, activation='relu', use_se=False),
+        BlockConfig(6, 64, 4, 512, activation='hs', use_se=False),
+        BlockConfig(4, 64, 4, 896, activation='hs', use_se=False, stride=1),
+    ]
+
+    return _peleenet('peleenet1x', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+@register_model
+def peleenet1xc(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(3, 32, 2, 128, activation='relu', use_se=False),
+        BlockConfig(4, 32, 4, 256, activation='relu', use_se=False),
+        BlockConfig(6, 64, 4, 512, activation='relu', use_se=False),
+        BlockConfig(4, 64, 4, 896, activation='relu', use_se=False, stride=1),
+    ]
+
+    return _peleenet('peleenet1x', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)                     
+
 @register_model
 def peleenet2x(pretrained: bool = False, progress: bool = True, **kwargs: Any):
-    model_args = dict(**kwargs)
 
     block_setting = [
         BlockConfig(3, 32, 4, 128, activation='relu', use_se=False),
@@ -64,7 +89,6 @@ def peleenet2x(pretrained: bool = False, progress: bool = True, **kwargs: Any):
     ]
     return _peleenet('peleenet2x', pretrained, progress,
                      block_setting=block_setting,
-                     last_channel=1024,
                      **kwargs)
 
 class SqueezeExcitation(nn.Module):
@@ -207,16 +231,15 @@ class PeleeNet(nn.Module):
     Args:
 
         drop_rate (float) - dropout rate
-        drop_path (float) - drop path rate
+        drop_path_rate (float) - drop path rate
         num_classes (int) - number of classification classes
     """
     def __init__(self, 
             block_setting: List[BlockConfig],
-            last_channel: int,
             stem_block=(3, 32, 3, 2),
             num_classes: int = 1000,
-            drop_path=0.2,
-            drop_rate=0.2):
+            drop_rate=0.2,
+            drop_path_rate=0.2):
 
         super().__init__()
 
@@ -240,7 +263,7 @@ class PeleeNet(nn.Module):
         # Each denseblock
         in_channels = out_channels
         for i, config in enumerate(block_setting):
-            config.drop_block = DropPath(drop_path)
+            config.drop_block = DropPath(drop_path_rate)
             block = _DenseBlock(in_channels=in_channels, config=config)
             self.features.add_module('denseblock%d' % (i + 1), block)
             in_channels = block.out_channels
