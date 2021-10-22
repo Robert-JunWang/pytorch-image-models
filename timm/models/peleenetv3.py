@@ -17,7 +17,7 @@ from .registry import register_model
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
-__all__ = ['PeleeNet', 'peleenet1x', 'peleenet2x']
+__all__ = ['PeleeNet', 'peleenet1xa', 'peleenet2xa']
 
 def _cfg(url='', **kwargs):
     return {
@@ -35,7 +35,7 @@ default_cfgs = {
 }
 
 @register_model
-def peleenet1x(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+def peleenet1xa(pretrained: bool = False, progress: bool = True, **kwargs: Any):
 
     block_setting = [
         BlockConfig(3, 32, 2, 128, activation='relu', use_se=False),
@@ -79,7 +79,7 @@ def peleenet1xc(pretrained: bool = False, progress: bool = True, **kwargs: Any):
                      **kwargs)                     
 
 @register_model
-def peleenet2x(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+def peleenet2xa(pretrained: bool = False, progress: bool = True, **kwargs: Any):
 
     block_setting = [
         BlockConfig(3, 32, 4, 128, activation='relu', use_se=False),
@@ -239,7 +239,7 @@ class PeleeNet(nn.Module):
             stem_block=(3, 32, 3, 2),
             num_classes: int = 1000,
             drop_rate=0.2,
-            drop_path_rate=0.2):
+            drop_path_rate=None):
 
         super().__init__()
 
@@ -263,7 +263,8 @@ class PeleeNet(nn.Module):
         # Each denseblock
         in_channels = out_channels
         for i, config in enumerate(block_setting):
-            config.drop_block = DropPath(drop_path_rate)
+            if drop_path_rate is not None:
+                config.drop_block = DropPath(drop_path_rate)
             block = _DenseBlock(in_channels=in_channels, config=config)
             self.features.add_module('denseblock%d' % (i + 1), block)
             in_channels = block.out_channels

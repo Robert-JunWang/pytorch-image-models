@@ -47,6 +47,7 @@ from .vovnet import *
 from .xception import *
 from .xception_aligned import *
 from .xcit import *
+from .peleenet import *
 from .peleenetv3 import *
 from .peleenas import *
 
