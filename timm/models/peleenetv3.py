@@ -243,7 +243,8 @@ class PeleeNet(nn.Module):
 
         super().__init__()
 
-
+        print('drop_rate',drop_rate)
+        print('drop_path_rate',drop_path_rate)
         if not block_setting:
             raise ValueError("The block_setting should not be empty")
         elif not (isinstance(block_setting, Sequence) or
