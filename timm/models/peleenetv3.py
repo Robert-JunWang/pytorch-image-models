@@ -134,18 +134,31 @@ class BlockConfig:
         return _make_divisible(channels * width_mult, 8)
 
 
+# class BasicConv2d(nn.Sequential):
+
+#     def __init__(self, in_channels, out_channels, activation='relu', drop_block=None, **kwargs):
+#         super(BasicConv2d, self).__init__()
+#         self.conv = nn.Conv2d(in_channels, out_channels, bias=False, **kwargs)
+#         self.norm = nn.BatchNorm2d(out_channels) 
+#         if drop_block is not None:
+#             self.drop_block = drop_block
+#         if activation == 'hs':
+#             self.activation = nn.Hardswish()
+#         else:
+#             self.activation = nn.ReLU()
+
 class BasicConv2d(nn.Sequential):
 
     def __init__(self, in_channels, out_channels, activation='relu', drop_block=None, **kwargs):
         super(BasicConv2d, self).__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, bias=False, **kwargs)
         self.norm = nn.BatchNorm2d(out_channels) 
-        if drop_block is not None:
-            self.drop_block = drop_block
         if activation == 'hs':
             self.activation = nn.Hardswish()
         else:
             self.activation = nn.ReLU()
+        if drop_block is not None:
+            self.drop_block = drop_block
 
 
 class _DenseLayer(nn.Module):
