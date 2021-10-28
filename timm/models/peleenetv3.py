@@ -46,7 +46,6 @@ def peleenet1xa(pretrained: bool = False, progress: bool = True, **kwargs: Any):
 
     return _peleenet('peleenet1x', pretrained, progress,
                      block_setting=block_setting,
-                     last_channel=1024,
                      **kwargs)
 
 
