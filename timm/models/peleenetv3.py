@@ -17,7 +17,7 @@ from .registry import register_model
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
-__all__ = ['PeleeNet', 'peleenet1xa', 'peleenet2xa']
+__all__ = ['PeleeNetV3', 'peleenet3s', 'peleenet3s2', 'peleenet3m', 'peleenet3m2', 'peleenet3m3']
 
 def _cfg(url='', **kwargs):
     return {
@@ -29,13 +29,33 @@ def _cfg(url='', **kwargs):
         **kwargs
     }
 
-default_cfgs = {
-    'peleenet1x': _cfg(url='https://github.com/edge-cv/benchmark/releases/download/pretrained/peleenet1x.pth'),
-    'peleenet2x': _cfg(url='https://github.com/edge-cv/benchmark/releases/download/pretrained/peleenet2x.pth')
+# default_cfgs = {
+#     'peleenet1x': _cfg(url='https://github.com/edge-cv/benchmark/releases/download/pretrained/peleenet1x.pth'),
+#     'peleenet2x': _cfg(url='https://github.com/edge-cv/benchmark/releases/download/pretrained/peleenet2x.pth')
+# }
+
+
+model_urls = {
+    'peleenet3s': 'pretrained/peleenet3s.pth',
+    'peleenet31': 'pretrained/peleenet31a.pth'
 }
 
 @register_model
-def peleenet1xa(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+def peleenet3s(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(3, 32, 2, 128, activation='relu', use_se=False),
+        BlockConfig(4, 32, 4, 256, activation='relu', use_se=False),
+        BlockConfig(6, 64, 4, 512, activation='hs', use_se=False),
+        BlockConfig(4, 64, 4, 896, activation='hs', use_se=False, stride=1),
+    ]
+
+    return _peleenet('peleenet3s', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+@register_model
+def peleenet3s2(pretrained: bool = False, progress: bool = True, **kwargs: Any):
 
     block_setting = [
         BlockConfig(3, 32, 2, 128, activation='relu', use_se=False),
@@ -48,68 +68,133 @@ def peleenet1xa(pretrained: bool = False, progress: bool = True, **kwargs: Any):
                      block_setting=block_setting,
                      **kwargs)
 
-
 @register_model
-def peleenet1xb(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+def peleenet3m(pretrained: bool = False, progress: bool = True, **kwargs: Any):
 
     block_setting = [
         BlockConfig(3, 32, 2, 128, activation='relu', use_se=False),
-        BlockConfig(4, 32, 4, 256, activation='relu', use_se=False),
-        BlockConfig(6, 64, 4, 512, activation='hs', use_se=False),
-        BlockConfig(4, 64, 4, 896, activation='hs', use_se=False, stride=1),
-    ]
-
-    return _peleenet('peleenet1x', pretrained, progress,
-                     block_setting=block_setting,
-                     **kwargs)
-
-@register_model
-def peleenet1xc(pretrained: bool = False, progress: bool = True, **kwargs: Any):
-
-    block_setting = [
-        BlockConfig(3, 32, 2, 128, activation='relu', use_se=False),
-        BlockConfig(4, 32, 4, 256, activation='relu', use_se=False),
-        BlockConfig(6, 64, 4, 512, activation='relu', use_se=False),
-        BlockConfig(4, 64, 4, 896, activation='relu', use_se=False, stride=1),
-    ]
-
-    return _peleenet('peleenet1x', pretrained, progress,
-                     block_setting=block_setting,
-                     **kwargs)                     
-
-@register_model
-def peleenet2xa(pretrained: bool = False, progress: bool = True, **kwargs: Any):
-
-    block_setting = [
-        BlockConfig(3, 32, 4, 128, activation='relu', use_se=False),
-        BlockConfig(8, 48, 4, 256, activation='relu', use_se=True),
+        BlockConfig(8, 48, 4, 256, activation='relu', use_se=False),
         BlockConfig(12, 64, 4, 512, activation='hs', use_se=False),
-        BlockConfig(8, 64, 4, 1024, activation='hs', use_se=True, stride=1),
+        BlockConfig(8, 64, 4, 1024, activation='hs', use_se=False, stride=1),
     ]
     return _peleenet('peleenet2x', pretrained, progress,
                      block_setting=block_setting,
                      **kwargs)
 
+@register_model
+def peleenet3m2(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(3, 32, 4, 128, activation='relu', use_se=False),
+        BlockConfig(8, 48, 4, 256, activation='relu', use_se=False),
+        BlockConfig(12, 64, 4, 512, activation='hs', use_se=False),
+        BlockConfig(8, 64, 4, 1024, activation='hs', use_se=False, stride=1),
+    ]
+    return _peleenet('peleenet2x', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+@register_model
+def peleenet3m3(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(4, 40, 2, 128, activation='relu', use_se=False),
+        BlockConfig(8, 48, 4, 256, activation='relu', use_se=False),
+        BlockConfig(12, 64, 4, 512, activation='hs', use_se=False),
+        BlockConfig(8, 64, 4, 1024, activation='hs', use_se=False, stride=1),
+    ]
+    return _peleenet('peleenet2x', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+
+@register_model
+def peleenet3mb(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    # width_mult=1.2
+    # depth_mult=1.4
+    width_mult=1.0
+    depth_mult=1.0
+
+    block_setting = [
+        BlockConfig(4, 40, 2, 128, activation='relu', use_se=False),
+        BlockConfig(5, 56, 4, 304, activation='relu', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
+        BlockConfig(8, 80, 4, 616, activation='hs', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
+        BlockConfig(5, 80, 4, 1024, activation='hs', use_se=False, width_mult=width_mult, depth_mult=depth_mult, stride=1),
+    ]
+    return _peleenet('peleenet2x', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+
+
+@register_model
+def peleenet3m3(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(3, 32, 4, 128, activation='relu', use_se=False),
+        BlockConfig(8, 48, 4, 256, activation='relu', use_se=False),
+        BlockConfig(12, 64, 4, 512, activation='hs', use_se=False),
+        BlockConfig(8, 64, 4, 1024, activation='hs', use_se=False, stride=1),
+    ]
+    return _peleenet('peleenet2x', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+
+@register_model
+def peleenet3l(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    width_mult=1.2
+    depth_mult=1.4
+
+    block_setting = [
+        BlockConfig(3, 32, 2, 128, activation='relu', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
+        BlockConfig(8, 48, 4, 256, activation='relu', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
+        BlockConfig(12, 64, 4, 512, activation='hs', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
+        BlockConfig(8, 64, 4, 1024, activation='hs', use_se=False, width_mult=width_mult, depth_mult=depth_mult, stride=1),
+    ]
+    return _peleenet('peleenet2x', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+# class SqueezeExcitation(nn.Module):
+#     # Implemented as described at Figure 4 of the MobileNetV3 paper
+#     def __init__(self, input_channels: int, squeeze_factor: int = 4):
+#         super().__init__()
+#         squeeze_channels = _make_divisible(input_channels // squeeze_factor, 8)
+#         self.fc1 = nn.Conv2d(input_channels, squeeze_channels, 1)
+#         self.relu = nn.ReLU(inplace=True)
+#         self.fc2 = nn.Conv2d(squeeze_channels, input_channels, 1)
+
+#     def _scale(self, input: Tensor, inplace: bool) -> Tensor:
+#         scale = F.adaptive_avg_pool2d(input, 1)
+#         scale = self.fc1(scale)
+#         scale = self.relu(scale)
+#         scale = self.fc2(scale)
+#         return F.hardsigmoid(scale, inplace=inplace)
+
+#     def forward(self, input: Tensor) -> Tensor:
+#         scale = self._scale(input, True)
+#         return scale * input
+
+
+
 class SqueezeExcitation(nn.Module):
-    # Implemented as described at Figure 4 of the MobileNetV3 paper
-    def __init__(self, input_channels: int, squeeze_factor: int = 4):
+    def __init__(self, channel, reduction=8):
         super().__init__()
-        squeeze_channels = _make_divisible(input_channels // squeeze_factor, 8)
-        self.fc1 = nn.Conv2d(input_channels, squeeze_channels, 1)
-        self.relu = nn.ReLU(inplace=True)
-        self.fc2 = nn.Conv2d(squeeze_channels, input_channels, 1)
+        self.avg_pool = nn.AdaptiveAvgPool2d(output_size=(1, 1))
+        self.fc = nn.Sequential(
+            nn.Conv2d(channel, channel // reduction, kernel_size=1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(channel // reduction, channel, kernel_size=1, bias=False),
+            nn.Sigmoid()
+        )
 
-    def _scale(self, input: Tensor, inplace: bool) -> Tensor:
-        scale = F.adaptive_avg_pool2d(input, 1)
-        scale = self.fc1(scale)
-        scale = self.relu(scale)
-        scale = self.fc2(scale)
-        return F.hardsigmoid(scale, inplace=inplace)
-
-    def forward(self, input: Tensor) -> Tensor:
-        scale = self._scale(input, True)
-        return scale * input
-
+    def forward(self, x):
+        y = self.avg_pool(x)
+        y = self.fc(y)
+        return torch.mul(x, y)
 
 class BlockConfig:
     def __init__(self,
@@ -118,8 +203,9 @@ class BlockConfig:
                  stride: int = 2,
                  use_se: bool = False,
                  width_mult: float = 1.0,
+                 depth_mult: float = 1.0,
                  drop_block:Any = None):
-        self.num_layers = num_layers
+        self.num_layers = int(num_layers*depth_mult)
         self.growth_rate = self.adjust_channels(growth_rate, width_mult)
         self.bottleneck_width = bottleneck_width
         self.out_channels = self.adjust_channels(out_channels, width_mult)
@@ -133,29 +219,19 @@ class BlockConfig:
         return _make_divisible(channels * width_mult, 8)
 
 
-# class BasicConv2d(nn.Sequential):
-
-#     def __init__(self, in_channels, out_channels, activation='relu', drop_block=None, **kwargs):
-#         super(BasicConv2d, self).__init__()
-#         self.conv = nn.Conv2d(in_channels, out_channels, bias=False, **kwargs)
-#         self.norm = nn.BatchNorm2d(out_channels) 
-#         if drop_block is not None:
-#             self.drop_block = drop_block
-#         if activation == 'hs':
-#             self.activation = nn.Hardswish()
-#         else:
-#             self.activation = nn.ReLU()
 
 class BasicConv2d(nn.Sequential):
 
-    def __init__(self, in_channels, out_channels, activation='relu', drop_block=None, **kwargs):
+    def __init__(self, in_channels, out_channels, activation='relu', drop_block=None, inplace=True, **kwargs):
         super(BasicConv2d, self).__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, bias=False, **kwargs)
         self.norm = nn.BatchNorm2d(out_channels) 
         if activation == 'hs':
-            self.activation = nn.Hardswish()
+            self.activation = nn.Hardswish(inplace=inplace)
+        elif activation == 'silu':
+            self.activation = nn.SiLU(inplace=inplace)
         else:
-            self.activation = nn.ReLU()
+            self.activation = nn.ReLU(inplace=inplace)
         if drop_block is not None:
             self.drop_block = drop_block
 
@@ -207,27 +283,20 @@ class _DenseBlock(nn.Sequential):
             self.add_module('denselayer%d' % (i + 1), layer)
             self.out_channels = layer.out_channels
 
-        self.add_module('transition', BasicConv2d(self.out_channels, config.out_channels, activation=config.activation, kernel_size=1))
-        self.out_channels = config.out_channels
-
 class _StemBlock(nn.Module):
-    def __init__(self, num_input_channels, num_init_features, kernel_size=3, stride=2):
+    def __init__(self, in_channels, out_channels):
         super(_StemBlock, self).__init__()
 
-        padding = kernel_size // 2
-
-        self.stem1 = BasicConv2d(num_input_channels, num_init_features, kernel_size=kernel_size, stride=stride, padding=padding)
-        self.stem2a = BasicConv2d(num_init_features, num_init_features, kernel_size=3, stride=2, padding=1)
-        self.stem2b = BasicConv2d(num_init_features, num_init_features, kernel_size=3, stride=1, padding=1)
-        self.stem3 = BasicConv2d(3*num_init_features, num_init_features, kernel_size=1, stride=1, padding=0)
+        self.stem2a = BasicConv2d(in_channels, in_channels, kernel_size=3, stride=2, padding=1)
+        self.stem2b = BasicConv2d(in_channels, in_channels, kernel_size=3, stride=1, padding=1)
+        self.stem3 = BasicConv2d(3*in_channels, out_channels, kernel_size=1, stride=1, padding=0)
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
 
 
     def forward(self, x):
-        out = self.stem1(x)
 
-        branch1 = self.pool(out)
-        branch2a = self.stem2a(out)
+        branch1 = self.pool(x)
+        branch2a = self.stem2a(x)
         branch2b = self.stem2b(branch2a)
 
         out = torch.cat([branch1, branch2a, branch2b], 1)
@@ -236,9 +305,7 @@ class _StemBlock(nn.Module):
         return out
 
 
-
-
-class PeleeNet(nn.Module):
+class PeleeNetV3(nn.Module):
     r"""PeleeNet model class
     Args:
 
@@ -248,15 +315,13 @@ class PeleeNet(nn.Module):
     """
     def __init__(self, 
             block_setting: List[BlockConfig],
-            stem_block=(3, 32, 3, 2),
+            first_layer = (3, 32, 3, 2),
             num_classes: int = 1000,
-            drop_rate=0.2,
-            drop_path_rate=None):
+            drop_rate=0.2):
 
         super().__init__()
 
-        print('drop_rate',drop_rate)
-        print('drop_path_rate',drop_path_rate)
+
         if not block_setting:
             raise ValueError("The block_setting should not be empty")
         elif not (isinstance(block_setting, Sequence) or
@@ -265,22 +330,28 @@ class PeleeNet(nn.Module):
 
         self.num_classes = num_classes
 
-        in_channels, out_channels, first_kernel_size, first_stride = stem_block
+
+        in_channels, out_channels, first_kernel_size, first_stride = first_layer
+        padding = first_kernel_size // 2
+
         self.features = nn.Sequential(OrderedDict([
-                ('stemblock', _StemBlock(
-                    in_channels, out_channels,
-                    first_kernel_size, first_stride)), 
-            ]))     
+                ( 'conv0', BasicConv2d(
+                    in_channels, 
+                    out_channels, 
+                    kernel_size=first_kernel_size, stride=first_stride, padding=padding)),
+                ('stemblock', _StemBlock(in_channels=out_channels,out_channels=out_channels)), 
+            ]))  
 
 
         # Each denseblock
         in_channels = out_channels
         for i, config in enumerate(block_setting):
-            if drop_path_rate is not None:
-                config.drop_block = DropPath(drop_path_rate)
             block = _DenseBlock(in_channels=in_channels, config=config)
             self.features.add_module('denseblock%d' % (i + 1), block)
             in_channels = block.out_channels
+
+            self.features.add_module('transition%d' % (i + 1), BasicConv2d(in_channels, config.out_channels, activation=config.activation, kernel_size=1))
+            in_channels = config.out_channels
 
             if config.stride != 1:
                 self.features.add_module('pool%d' % (i + 1), nn.AvgPool2d(kernel_size=config.stride, stride=config.stride))
@@ -294,18 +365,6 @@ class PeleeNet(nn.Module):
 
         self._initialize_weights()
 
-        # for m in self.modules():
-        #     if isinstance(m, nn.Conv2d):
-        #         nn.init.kaiming_normal_(m.weight, mode="fan_out")
-        #         if m.bias is not None:
-        #             nn.init.zeros_(m.bias)
-        #     elif isinstance(m, (nn.BatchNorm2d, nn.GroupNorm)):
-        #         nn.init.ones_(m.weight)
-        #         nn.init.zeros_(m.bias)
-        #     elif isinstance(m, nn.Linear):
-        #         init_range = 1.0 / math.sqrt(m.out_features)
-        #         nn.init.uniform_(m.weight, -init_range, init_range)
-        #         nn.init.zeros_(m.bias)
 
 
     def _initialize_weights(self):
@@ -335,10 +394,10 @@ class PeleeNet(nn.Module):
 
 def _peleenet(arch: str, pretrained: bool = False, progress: bool = True, **kwargs: Any):
     print(kwargs)
-    model = PeleeNet(**kwargs)
+    model = PeleeNetV3(**kwargs)
 
     if pretrained:
-        model_url = default_cfgs[arch]['url']
+        model_url = model_urls[arch]
 
         if model_url.startswith('http'):
             state_dict = load_state_dict_from_url(model_url, progress=progress)
@@ -350,29 +409,25 @@ def _peleenet(arch: str, pretrained: bool = False, progress: bool = True, **kwar
 
     return model
 
+
 if __name__ == '__main__':
-    input_var = torch.autograd.Variable(torch.Tensor(1,3,224,224))
-    model = peleenet1x(num_classes=120)
+    input_var = torch.Tensor(1,3,224,224)
+    model = peleenet1x()
 
-    print(model)
-
+    layer_types  = []
+    output_shapes = []
     def print_size(self, input, output):
-        print(torch.typename(self).split('.')[-1], ' output size:',output.data.size())
+        layer_types.append(torch.typename(self).split('.')[-1])
+        output_shapes.append(output.data.size())
+        # print(torch.typename(self).split('.')[-1], ' output size:',output.data.size())
 
+    names = list(model.features._modules.keys())
     for layer in model.features:
         layer.register_forward_hook(print_size)
 
-    o = model.forward(input_var)
-    # import torch.onnx
 
-    # extra_args = {'opset_version': 11 }
-    # input_names=['data']
-
-    # output_names=["output"]
-
-    # torch.onnx.export(model, input_var, 'peleenas1x', verbose=True,
-    #                     do_constant_folding=True,
-    #                     input_names=input_names,
-    #                     output_names=output_names,*extra_args)
+    output = model.forward(input_var)
+    for i, (name, type, size) in enumerate(zip(names, layer_types, output_shapes)):
+        print(i, name, type, size)
 
 
