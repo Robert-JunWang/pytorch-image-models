@@ -17,7 +17,7 @@ from .registry import register_model
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
-__all__ = ['peleenas1x', 'peleenas1x2']
+__all__ = ['peleenas1x', 'peleenas1x2', 'peleenas1x3']
 
 model_urls = {
     'peleenas1x': 'https://github.com/edge-cv/benchmark/releases/download/pretrained/peleenet1x.pth',
@@ -56,6 +56,19 @@ def peleenas1x(pretrained: bool = False, progress: bool = True, **kwargs: Any):
         BlockConfig(6, 32, 4, 256, activation='relu', use_se=False),
         BlockConfig(12, 64, 4, 512, activation='relu', use_se=False),
         BlockConfig(6, 64, 4, 896, activation='relu', use_se=False, stride=1),
+    ]
+
+    return _peleenet('peleenet3s', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+def peleenas1x3(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(4, 48, 2, 128, activation='relu', use_se=False),
+        BlockConfig(6, 48, 4, 256, activation='relu', use_se=False),
+        BlockConfig(12, 80, 4, 512, activation='relu', use_se=False),
+        BlockConfig(6, 80, 4, 896, activation='relu', use_se=False, stride=1),
     ]
 
     return _peleenet('peleenet3s', pretrained, progress,
