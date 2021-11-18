@@ -40,6 +40,24 @@ model_urls = {
     'peleenet31': 'pretrained/peleenet31a.pth'
 }
 
+
+@register_model
+def peleenet3xs(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    width_mult=0.75
+    depth_mult=1.0
+
+    block_setting = [
+        BlockConfig(4, 40, 2, 128, activation='relu', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
+        BlockConfig(5, 56, 4, 304, activation='relu', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
+        BlockConfig(8, 80, 4, 616, activation='hs', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
+        BlockConfig(5, 80, 4, 1024, activation='hs', use_se=False, width_mult=width_mult, depth_mult=depth_mult, stride=1),
+    ]
+    return _peleenet('peleenet2x', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+
 @register_model
 def peleenet3s(pretrained: bool = False, progress: bool = True, **kwargs: Any):
 
@@ -205,7 +223,7 @@ class BlockConfig:
                  width_mult: float = 1.0,
                  depth_mult: float = 1.0,
                  drop_block:Any = None):
-        self.num_layers = int(num_layers*depth_mult)
+        self.num_layers = math.ceil(num_layers*depth_mult)
         self.growth_rate = self.adjust_channels(growth_rate, width_mult)
         self.bottleneck_width = bottleneck_width
         self.out_channels = self.adjust_channels(out_channels, width_mult)
@@ -412,7 +430,7 @@ def _peleenet(arch: str, pretrained: bool = False, progress: bool = True, **kwar
 
 if __name__ == '__main__':
     input_var = torch.Tensor(1,3,224,224)
-    model = peleenet1x()
+    model = peleenet3xs()
 
     layer_types  = []
     output_shapes = []
