@@ -62,6 +62,7 @@ def peleenas1x(pretrained: bool = False, progress: bool = True, **kwargs: Any):
                      block_setting=block_setting,
                      **kwargs)
 
+@register_model
 def peleenas1x3(pretrained: bool = False, progress: bool = True, **kwargs: Any):
 
     block_setting = [
