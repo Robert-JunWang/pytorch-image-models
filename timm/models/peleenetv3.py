@@ -17,7 +17,7 @@ from .registry import register_model
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
-__all__ = ['PeleeNetV3', 'peleenet3s', 'peleenet3s2', 'peleenet3m', 'peleenet3m2', 'peleenet3m3']
+__all__ = ['PeleeNetV3', 'peleenet3s', 'peleenet3s2', 'peleenet3m', 'peleenet3m2', 'peleenet3m3', 'peleenet3xs']
 
 def _cfg(url='', **kwargs):
     return {
@@ -48,15 +48,15 @@ def peleenet3xs(pretrained: bool = False, progress: bool = True, **kwargs: Any):
     depth_mult=1.0
 
     block_setting = [
-        BlockConfig(4, 40, 2, 128, activation='relu', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
-        BlockConfig(5, 56, 4, 304, activation='relu', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
-        BlockConfig(8, 80, 4, 616, activation='hs', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
-        BlockConfig(5, 80, 4, 1024, activation='hs', use_se=False, width_mult=width_mult, depth_mult=depth_mult, stride=1),
+        BlockConfig(3, 32, 1, 128, activation='relu', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
+        BlockConfig(4, 32, 2, 256, activation='relu', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
+        BlockConfig(6, 64, 4, 512, activation='relu', use_se=False, width_mult=width_mult, depth_mult=depth_mult),
+        BlockConfig(4, 64, 4, 896, activation='relu', use_se=False, width_mult=width_mult, depth_mult=depth_mult, stride=1),
     ]
     return _peleenet('peleenet2x', pretrained, progress,
                      block_setting=block_setting,
+                     first_layer = (3, 24, 3, 2),
                      **kwargs)
-
 
 @register_model
 def peleenet3s(pretrained: bool = False, progress: bool = True, **kwargs: Any):
