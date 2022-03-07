@@ -50,6 +50,7 @@ def peleenet1x(pretrained: bool = False, progress: bool = True, **kwargs: Any):
         bottleneck_width=[2,4,4,4], 
         **kwargs)
 
+
 @register_model
 def peleenet1x_se(pretrained: bool = False, progress: bool = True, **kwargs: Any):
     return _peleenet('peleenet1x_se', pretrained, progress,

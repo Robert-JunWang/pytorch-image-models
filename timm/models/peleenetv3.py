@@ -17,7 +17,7 @@ from .registry import register_model
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
-__all__ = ['PeleeNetV3', 'peleenet3s', 'peleenet3s2', 'peleenet3m', 'peleenet3m2', 'peleenet3m3', 'peleenet3xs']
+__all__ = ['PeleeNetV3', 'peleenet17', 'peleenet18', 'peleenet27', 'peleenet31', 'peleenet36', 'peleenet3s', 'peleenet3s2', 'peleenet3m', 'peleenet3m2', 'peleenet3m3', 'peleenet3xs']
 
 def _cfg(url='', **kwargs):
     return {
@@ -69,6 +69,75 @@ def peleenet3s(pretrained: bool = False, progress: bool = True, **kwargs: Any):
     ]
 
     return _peleenet('peleenet3s', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+
+@register_model
+def peleenet17(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(3, 32, 2, 128, activation='relu', use_se=False),
+        BlockConfig(4, 32, 4, 256, activation='relu', use_se=False),
+        BlockConfig(6, 64, 4, 512, activation='relu', use_se=False),
+        BlockConfig(4, 64, 4, 896, activation='relu', use_se=False, stride=1),
+    ]
+
+    return _peleenet('peleenet17', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+@register_model
+def peleenet18(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(3, 32, 2, 128, activation='relu', use_se=False),
+        BlockConfig(3, 32, 4, 256, activation='relu', use_se=False),
+        BlockConfig(9, 64, 4, 512, activation='relu', use_se=False),
+        BlockConfig(3, 64, 4, 896, activation='relu', use_se=False, stride=1),
+    ]
+
+    return _peleenet('peleenet18', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+@register_model
+def peleenet27(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(3, 32, 4, 128, activation='relu', use_se=False),
+        BlockConfig(3, 48, 4, 256, activation='relu', use_se=False),
+        BlockConfig(18, 64, 4, 512, activation='relu', use_se=False),
+        BlockConfig(3, 64, 4, 1024, activation='relu', use_se=False, stride=1),
+    ]
+    return _peleenet('peleenet36', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+@register_model
+def peleenet31(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(3, 32, 4, 128, activation='relu', use_se=False),
+        BlockConfig(8, 48, 4, 256, activation='relu', use_se=False),
+        BlockConfig(12, 64, 4, 512, activation='relu', use_se=False),
+        BlockConfig(8, 64, 4, 1024, activation='relu', use_se=False, stride=1),
+    ]
+    return _peleenet('peleenet31', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+
+@register_model
+def peleenet36(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(3, 32, 4, 128, activation='relu', use_se=False),
+        BlockConfig(3, 48, 4, 256, activation='relu', use_se=False),
+        BlockConfig(27, 64, 4, 512, activation='relu', use_se=False),
+        BlockConfig(3, 64, 4, 1024, activation='relu', use_se=False, stride=1),
+    ]
+    return _peleenet('peleenet36', pretrained, progress,
                      block_setting=block_setting,
                      **kwargs)
 
