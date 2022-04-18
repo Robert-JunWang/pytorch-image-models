@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import nn, Tensor
-from torchvision.models.utils import load_state_dict_from_url
+from .hub import load_state_dict_from_url
 from torchvision.models.mobilenetv2 import _make_divisible
 
 from .rep_vgg_block import RepVGGBlock

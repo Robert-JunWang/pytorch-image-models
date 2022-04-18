@@ -3,7 +3,7 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models.utils import load_state_dict_from_url
+from .hub import load_state_dict_from_url
 from collections import OrderedDict
 from typing import Type, Any, Callable, Union, List, Optional
 
