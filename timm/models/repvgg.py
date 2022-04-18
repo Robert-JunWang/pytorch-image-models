@@ -247,6 +247,11 @@ def repvgg_b0(num_classes=1000, deploy=False, pretrained=False, **kwargs: Any):
     return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=num_classes,
                   width_multiplier=[1, 1, 1, 2.5], override_groups_map=None, deploy=deploy, **kwargs)
 
+@register_model
+def repvgg_b1(num_classes=1000, deploy=False, pretrained=False, **kwargs: Any):
+    return RepVGG(num_blocks=[4, 6, 16, 1], num_classes=num_classes,
+                  width_multiplier=[2, 2, 2, 4], override_groups_map=None, deploy=deploy, **kwargs)
+
 def create_RepVGG_A0(deploy=False):
     return RepVGG(num_blocks=[2, 4, 14, 1], num_classes=1000,
                   width_multiplier=[0.75, 0.75, 0.75, 2.5], override_groups_map=None, deploy=deploy)

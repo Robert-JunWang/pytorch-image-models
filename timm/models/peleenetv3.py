@@ -102,6 +102,20 @@ def peleenet18(pretrained: bool = False, progress: bool = True, **kwargs: Any):
                      **kwargs)
 
 @register_model
+def peleenet182(pretrained: bool = False, progress: bool = True, **kwargs: Any):
+
+    block_setting = [
+        BlockConfig(3, 32, 2, 128, activation='relu', use_se=False),
+        BlockConfig(3, 32, 4, 224, activation='relu', use_se=False),
+        BlockConfig(9, 64, 4, 512, activation='relu', use_se=False),
+        BlockConfig(3, 64, 4, 704, activation='relu', use_se=False, stride=1),
+    ]
+
+    return _peleenet('peleenet182', pretrained, progress,
+                     block_setting=block_setting,
+                     **kwargs)
+
+@register_model
 def peleenet27(pretrained: bool = False, progress: bool = True, **kwargs: Any):
 
     block_setting = [
@@ -404,7 +418,7 @@ class PeleeNetV3(nn.Module):
             block_setting: List[BlockConfig],
             first_layer = (3, 32, 3, 2),
             num_classes: int = 1000,
-            drop_rate=0.2):
+            drop_rate=0.2, **kwargs):
 
         super().__init__()
 
@@ -462,6 +476,9 @@ class PeleeNetV3(nn.Module):
                 if m.bias is not None:
                     m.bias.data.zero_()
             elif isinstance(m, nn.BatchNorm2d):
+                # m.eps = 1e-3
+                # m.momentum = 0.03
+
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
             elif isinstance(m, nn.Linear):
