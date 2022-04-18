@@ -17,7 +17,7 @@ from .registry import register_model
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
-__all__ = ['PeleeNetV3', 'peleenet17', 'peleenet18', 'peleenet27', 'peleenet31', 'peleenet36', 'peleenet3s', 'peleenet3s2', 'peleenet3m', 'peleenet3m2', 'peleenet3m3', 'peleenet3xs']
+__all__ = ['PeleeNetV3', 'peleenet17', 'peleenet18', 'peleenet182', 'peleenet31', 'peleenet36', 'peleenet3s', 'peleenet3s2', 'peleenet3m', 'peleenet3m2', 'peleenet3m3', 'peleenet3xs']
 
 def _cfg(url='', **kwargs):
     return {
